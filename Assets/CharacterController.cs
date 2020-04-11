@@ -11,9 +11,11 @@ public class CharacterController : MonoBehaviour
     private bool facingRight = true;
 
     [Header("Vertical Movement")]
+    public bool jumping = false;
     public float jumpSpeed = 15f;
     public float jumpDelay = 0.25f;
     private float jumpTimer;
+
 
     [Header("Components")]
     public Rigidbody2D rb;
@@ -35,7 +37,8 @@ public class CharacterController : MonoBehaviour
     private Vector2 finalFlickDir;
     private float flickTime = 0f;
     private bool flickable = false;
-    
+    private bool launched = false;
+    public Vector2 trajectoryCorrection;
 
     [Header ("Collision")]
     public bool onGround = false;
@@ -62,6 +65,10 @@ public class CharacterController : MonoBehaviour
         }
 
         direction = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+
+        launchCursor();
+
+        AnimationHandler(animator);
     }
 
     void FixedUpdate()
@@ -73,32 +80,33 @@ public class CharacterController : MonoBehaviour
         }
 
         modifyPhysics();
-
-        launchCursor();
     }
 
     void MoveCharacter(float horizontal)
     {
-        rb.AddForce(Vector2.right * horizontal * moveSpeed);
-
-        animator.SetFloat("Horizontal", Mathf.Abs(rb.velocity.x));
+        if (Mathf.Abs(rb.velocity.x) < maxSpeed)
+        {
+            rb.AddForce(Vector2.right * horizontal * moveSpeed);
+        }
 
         if ((horizontal > 0 && !facingRight) || (horizontal < 0 && facingRight))
         {
             Flip();
         }
 
-        if(Mathf.Abs(rb.velocity.x) > maxSpeed)
+        /*if(Mathf.Abs(rb.velocity.x) > maxSpeed)
         {
-            rb.velocity = new Vector2(Mathf.Sign(rb.velocity.x) * maxSpeed, rb.velocity.y);
-        }
+            //rb.velocity = new Vector2(Mathf.Sign(rb.velocity.x) * maxSpeed, rb.velocity.y);
+            rb.AddForce(new Vector2(Mathf.Sign(rb.velocity.x) * maxSpeed, rb.velocity.y));
+        }*/
     }
 
     void Jump()
     {
-        rb.velocity = new Vector2(rb.velocity.x, 0);
+        //rb.velocity = new Vector2(rb.velocity.x, 0);
         rb.AddForce(Vector2.up * jumpSpeed, ForceMode2D.Impulse);
         jumpTimer = 0;
+        print("jumped");
     }
 
 
@@ -120,10 +128,11 @@ public class CharacterController : MonoBehaviour
     {
         changingDirections = (direction.x > 0 && rb.velocity.x < 0) || (direction.x < 0 && rb.velocity.x > 0);
 
-        animator.SetFloat("Vertical", rb.velocity.y);
-
         if (onGround)
         {
+            launched = false;
+            linearDrag = 4;
+
             if (Mathf.Abs(direction.x) < 0.4f || changingDirections && onGround)
             {
                 rb.drag = linearDrag;
@@ -133,6 +142,11 @@ public class CharacterController : MonoBehaviour
                 rb.drag = 0;
             }
             rb.gravityScale = 0;
+        }
+        else if(launched == true)
+        {
+            rb.gravityScale = gravity * fallMultiplier;
+            linearDrag = 0;
         }
         else
         {
@@ -147,7 +161,7 @@ public class CharacterController : MonoBehaviour
             {
                 rb.gravityScale = gravity * (fallMultiplier / 2);
             }
-        } 
+        }
     }
 
     void launchCursor()
@@ -205,13 +219,54 @@ public class CharacterController : MonoBehaviour
 
     void launch(Vector2 launchDir)
     {
-        rb.AddForce(launchDir*launchForce, ForceMode2D.Impulse);
+        rb.AddForce(launchDir*launchForce*trajectoryCorrection  , ForceMode2D.Impulse);
+        print("trajectory: " + launchDir * launchForce);
+
+        launched = true;
     }
 
     void Flip()
     {
         facingRight = !facingRight;
         transform.rotation = Quaternion.Euler(0, facingRight ? 0 : 180, 0);
+    }
+
+    void AnimationHandler(Animator anim)
+    {
+        anim.SetFloat("Horizontal", Mathf.Abs(rb.velocity.x));
+        anim.SetFloat("Vertical", rb.velocity.y);
+
+        if (anim.GetBool("Jumping"))
+        {
+            anim.SetBool("Jumping", false);
+        }
+
+        if (Input.GetButtonDown("Jump"))
+        {
+            StartCoroutine(stopJumpAnimation());
+        }
+
+        if (onGround)
+        {
+            anim.SetBool("Grounded", true);
+            jumping = false;
+        }
+
+        if (jumping)
+        {
+            anim.SetBool("Jumping", true);
+        }
+        else
+        {
+            anim.SetBool("Jumping", false);
+        }
+    }
+  
+    IEnumerator stopJumpAnimation()
+    {
+        jumping = true;
+        yield return new WaitForSecondsRealtime(0.5f);
+        jumping = false;
     }
 
     private void OnDrawGizmos()
