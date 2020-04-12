@@ -28,6 +28,8 @@ public class CharacterController : MonoBehaviour
     public float gravity = 1;
     public float fallMultiplier = 5;
     public bool changingDirections;
+    public PhysicsMaterial2D playerMaterial;
+    public PhysicsMaterial2D[] materials;
 
     [Header("Launcher")]
     public SpriteRenderer launchCursorSprite;
@@ -51,7 +53,7 @@ public class CharacterController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        Cursor.visible = false;
     }
 
     // Update is called once per frame
@@ -69,6 +71,8 @@ public class CharacterController : MonoBehaviour
         launchCursor();
 
         AnimationHandler(animator);
+
+        modifyBounciness();
     }
 
     void FixedUpdate()
@@ -123,6 +127,15 @@ public class CharacterController : MonoBehaviour
             Time.fixedDeltaTime = 0.02f;
         }
     }*/
+
+    void modifyBounciness()
+    {
+        if (Input.GetKey(KeyCode.JoystickButton4) && GetComponent<BoxCollider2D>().sharedMaterial.Equals(materials[1]))
+        {
+            GetComponent<BoxCollider2D>().sharedMaterial = materials[0];
+            print(playerMaterial.bounciness);
+        }
+    }
 
     void modifyPhysics()
     {
@@ -199,6 +212,9 @@ public class CharacterController : MonoBehaviour
             rb.velocity = new Vector2(0, 0);
             launch(finalFlickDir);
             print("flicked");
+
+            //set material to bouncy
+            GetComponent<BoxCollider2D>().sharedMaterial = materials[1];
 
             Time.timeScale = 1;
             Time.fixedDeltaTime = 0.02f;
