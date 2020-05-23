@@ -1,10 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class CharacterController : MonoBehaviour
 {
-
     [Header ("Visuals")]
     public ParticleSystem dust;
     public GameObject cursorParent;
@@ -13,6 +13,7 @@ public class CharacterController : MonoBehaviour
     public int screenWidth, screenHeight;
     public Vector2 centreScreen;
     public GameObject wintext;
+    public GameObject gametext;
 
 
 
@@ -22,6 +23,7 @@ public class CharacterController : MonoBehaviour
     public bool facingRight = true;
 
     [Header("Vertical Movement")]
+    public bool canJump;
     public bool toggleJump = false;
     public bool jumping = false;
     public float jumpSpeed = 15f;
@@ -44,6 +46,7 @@ public class CharacterController : MonoBehaviour
     public PhysicsMaterial2D[] materials;
 
     [Header("Launcher")]
+    public bool canLaunch;
     public SpriteRenderer launchCursorSprite;
     public float launchForce = 100f;
     public float flickWindow = 0.5f;
@@ -72,11 +75,26 @@ public class CharacterController : MonoBehaviour
     [Header("Respawn")]
     public Vector3 spawnPoint;
 
+    [Header("Level Loader")]
+    public string nextScene;
+    public int loadWaitTime;
+    public bool quitAfterLevel;
+
 
     // Start is called before the first frame update
     void Start()
     {
         spawnPoint = transform.position;
+
+        if (!gametext)
+        {
+            gametext = GameObject.Find("Gametext");
+        }
+
+        if (!wintext)
+        {
+            wintext = GameObject.Find("Wintext");
+        }
 
         Cursor.visible = false;
         lineAFinder = lineA.GetComponent<TrajectoryPredictor>();
@@ -85,6 +103,8 @@ public class CharacterController : MonoBehaviour
         screenWidth = Display.main.renderingWidth;
         screenHeight = Display.main.renderingHeight;
         centreScreen = new Vector2(screenWidth/2, screenHeight/2);
+
+        
     }
 
     // Update is called once per frame
@@ -92,19 +112,26 @@ public class CharacterController : MonoBehaviour
     {
         onGround = Physics2D.Raycast(transform.position, Vector2.down, groundLength, groundLayer);
 
-        if(Input.GetButtonDown("Jump"))
+        if(Input.GetButtonDown("Jump") && canJump)
         {
             jumpTimer = Time.time + jumpDelay;
         }
 
         direction = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 
-        launchCursor();
+        if (canLaunch)
+        {
+            launchCursor();
+        }
+        else
+        {
+            Cursor.visible = false;
+        }
 
-        if (Input.GetKey(KeyCode.JoystickButton4) && GetComponent<BoxCollider2D>().sharedMaterial.Equals(materials[1]) || Input.GetKey(KeyCode.Q) && GetComponent<BoxCollider2D>().sharedMaterial.Equals(materials[1]))
+        /*if (Input.GetKey(KeyCode.JoystickButton4) && GetComponent<BoxCollider2D>().sharedMaterial.Equals(materials[1]) || Input.GetKey(KeyCode.Q) && GetComponent<BoxCollider2D>().sharedMaterial.Equals(materials[1]))
         {
             modifyBounciness();
-        }
+        }*/
 
 
         AnimationHandler(animator);
@@ -253,14 +280,30 @@ public class CharacterController : MonoBehaviour
     {
         if(coll.tag == "endzone")
         {
+            gametext.SetActive(false);
             wintext.SetActive(true);
+            StartCoroutine(nextLevel());
         }
 
         if(coll.tag == "killzone")
         {
+            modifyBounciness();
             transform.position = spawnPoint;
             print("dead");
         }
+    }
+
+    IEnumerator nextLevel()
+    {
+        yield return new WaitForSecondsRealtime(loadWaitTime);
+
+        if (!quitAfterLevel)
+        {
+            int count = SceneManager.GetActiveScene().buildIndex + 1;
+            SceneManager.LoadScene(nextScene);
+            SceneManager.SetActiveScene(SceneManager.GetSceneByName(nextScene));
+        }
+        else { Application.Quit(0); }
     }
 
     void launchCursor()
