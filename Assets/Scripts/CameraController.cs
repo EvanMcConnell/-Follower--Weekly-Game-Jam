@@ -4,23 +4,27 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    private float horizontal;
     private bool facingRight = true;
-    public GameObject player, endzone;
-    // Update is called once per frame
-    
+    private GameObject target, endzone;
+
+    public static CameraController CreateComponent(GameObject where, GameObject target, GameObject endzone)
+    {
+        CameraController cam = where.AddComponent<CameraController>();
+        cam.target = target;
+        cam.endzone = endzone;
+        return cam;
+    }
+
+    void Start()
+    {
+        if (!target){ target = GameObject.Find("Player"); }
+
+    }
+
     void Update()
     {
-        /*horizontal = Input.GetAxisRaw("Horizontal");
-        if ((horizontal > 0 && !facingRight) || (horizontal < 0 && facingRight))
-        {
-            Flip();
-        }*/
-
-        //transform.position = new Vector3(player.transform.position.x, player.transform.position.y, -5);
-
-        transform.position = player.transform.position.x < 0.7 ? new Vector3(player.transform.position.x, 1.6f, -10) : transform.position;
-        print(transform.position);
+        transform.position = target.transform.position.x < 0.7 ? new Vector3(target.transform.position.x, 1.6f, -10) : transform.position;
+        //print(transform.position);
     }
 
     void Flip()

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CharacterAnimationHandler : MonoBehaviour
 {
-    private CharacterController cc;
+    private CharacterControllerAllInOne cc;
     private Animator anim;
     private Rigidbody2D rb;
     private Vector2 movementInput;
@@ -25,7 +25,7 @@ public class CharacterAnimationHandler : MonoBehaviour
     void Start()
     {
         //assign component variables
-        cc = GetComponent<CharacterController>();
+        cc = GetComponent<CharacterControllerAllInOne>();
         anim = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
     }

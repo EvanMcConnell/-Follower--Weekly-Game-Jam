@@ -18,7 +18,7 @@ TagManager:
   - 
   - Ground
   - Mouth
-  - 
+  - title
   - 
   - 
   - 
@@ -49,4 +49,7 @@ TagManager:
     locked: 0
   - name: Mouth
     uniqueID: 3081563945
+    locked: 0
+  - name: Title
+    uniqueID: 3397027255
     locked: 0
