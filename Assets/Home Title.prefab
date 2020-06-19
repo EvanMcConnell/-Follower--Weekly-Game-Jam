@@ -72,7 +72,7 @@ SpriteRenderer:
   m_SortingLayerID: -897940041
   m_SortingLayer: 3
   m_SortingOrder: 0
-  m_Sprite: {fileID: 8553386130774173891, guid: c37b0f062725642448647ad7d16dc1f0,
+  m_Sprite: {fileID: -2765225472905855514, guid: c37b0f062725642448647ad7d16dc1f0,
     type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -116,7 +116,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   paletteMaterial: {fileID: 0}
-  title: {fileID: 0}
 --- !u!114 &784441582
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -129,6 +128,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb370d2c0c91cf14e839e23d8198445b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  state: 1
+  state: 2
   titleAnim: {fileID: 3600708596164698492}
   level: 3
